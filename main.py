@@ -4,12 +4,12 @@ import random
 import hashlib
 import time
 import pickle
-import zmq
+#import zmq
 import json
 
-context = zmq.Context()
-socket = context.socket(zmq.PUB)
-socket.bind("tcp://*:5555")
+#context = zmq.Context()
+#socket = context.socket(zmq.PUB)
+#socket.bind("tcp://*:5555")
 
 class Block:
     def __init__(self, transactions, previous_hash):
@@ -100,7 +100,7 @@ while True:
     print("3. Afficher la liste des transactions en attentes")
     print("4. Afficher la blockchain")
     print("5. Quitter")
-    message = socket.recv_string()
+    #message = socket.recv_string()
     blockchain.pending_transactions = json.loads(message)
     
     
@@ -115,14 +115,14 @@ while True:
         blockchain.add_transaction(transaction)
         print("La transaction a été ajoutée avec succès.")
         message = json.dumps(blockchain.get_pending_transactions())
-        socket.send_string(message)
+        #socket.send_string(message)
 
     elif choice == '2':
         blockchain.mine_pending_transactions()
         blockchain.save_blockchain()
         print("Les transactions en attente ont été minées avec succès.")
         message = json.dumps(blockchain.get_pending_transactions())
-        socket.send_string(message)
+        #socket.send_string(message)
 
     elif choice == '3':
         for transaction in blockchain.get_pending_transactions():

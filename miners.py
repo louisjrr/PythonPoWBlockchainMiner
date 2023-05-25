@@ -4,13 +4,13 @@ import random
 import hashlib
 import time
 import pickle
-import zmq
+#import zmq
 import json
 
-context = zmq.Context()
-socket = context.socket(zmq.SUB)
-socket.connect("tcp://localhost:5555")
-socket.setsockopt_string(zmq.SUBSCRIBE, "")
+#context = zmq.Context()
+#socket = context.socket(zmq.SUB)
+#socket.connect("tcp://localhost:5555")
+#socket.setsockopt_string(zmq.SUBSCRIBE, "")
 
 class Block:
     def __init__(self, transactions, previous_hash):
@@ -96,13 +96,13 @@ def generate_random_address(length):
 # Boucle pour simuler un nœud sur chaque terminal de commande
 while True:
     print("Minage en cour...")	
-    message = socket.recv_string()
+    #message = socket.recv_string()
     print("Transactions en attentes :", message)  
     blockchain.pending_transactions = json.loads(message)
     blockchain.mine_pending_transactions()
     blockchain.save_blockchain()
     message = json.dumps(blockchain.get_pending_transactions())
-    socket.send_string(message)
+    #socket.send_string(message)
 
     
 
