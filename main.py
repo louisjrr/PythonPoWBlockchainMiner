@@ -52,7 +52,7 @@ class Block:
 class Blockchain:
     def __init__(self):
         self.chain = self.load_blockchain()
-        self.difficulty = 6
+        self.difficulty = 4
         self.pending_transactions = []
     
     def load_blockchain(self):
@@ -118,7 +118,7 @@ while True:
     choice = input("Choisissez une option (1-4): ")
     #message = socket.recv_string()
 
-    client_socket.settimeout(10)
+    client_socket.settimeout(6)
     try:
         message = client_socket.recv(1024).decode()
  
@@ -126,7 +126,7 @@ while True:
         print("Transactions en attentes :", blockchain.get_pending_transactions())
 
     except socket.timeout:
-        
+
         if choice == '1':
             sender = generate_random_address(10)
             recipient = generate_random_address(10)
