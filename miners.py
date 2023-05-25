@@ -48,7 +48,7 @@ class Block:
 class Blockchain:
     def __init__(self):
         self.chain = self.load_blockchain()
-        self.difficulty = 6
+        self.difficulty = 4
         self.pending_transactions = []
     
     def load_blockchain(self):
