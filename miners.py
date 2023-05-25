@@ -6,11 +6,21 @@ import time
 import pickle
 #import zmq
 import json
+import socket
 
 #context = zmq.Context()
 #socket = context.socket(zmq.SUB)
 #socket.connect("tcp://localhost:5555")
 #socket.setsockopt_string(zmq.SUBSCRIBE, "")
+
+# Configuration du client
+host = 'localhost'
+port = 5000
+
+# Création du socket
+client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client_socket.connect((host, port))
+print("Instance 2: Connexion établie avec le serveur")
 
 class Block:
     def __init__(self, transactions, previous_hash):
@@ -95,14 +105,22 @@ def generate_random_address(length):
 
 # Boucle pour simuler un nœud sur chaque terminal de commande
 while True:
-    print("Minage en cour...")	
-    #message = socket.recv_string()
-    print("Transactions en attentes :", message)  
-    blockchain.pending_transactions = json.loads(message)
-    blockchain.mine_pending_transactions()
-    blockchain.save_blockchain()
-    message = json.dumps(blockchain.get_pending_transactions())
-    #socket.send_string(message)
+    client_socket.settimeout(5)
+    try:
+        message = client_socket.recv(1024).decode()
+        if message:
+            blockchain.pending_transactions = json.loads(message)
+            print("Transactions en attentes :", blockchain.get_pending_transactions())
+        else:
+            print("Minage en cour...")	
+            #message = socket.recv_string() 
+            blockchain.mine_pending_transactions()
+            blockchain.save_blockchain()
+            message = json.dumps(blockchain.get_pending_transactions())
+            #socket.send_string(message)
+            client_socket.send(message.encode())
+    except socket.timeout:
+        print("Transaction en attente...")
 
     
 

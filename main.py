@@ -6,10 +6,25 @@ import time
 import pickle
 #import zmq
 import json
+import socket
 
 #context = zmq.Context()
 #socket = context.socket(zmq.PUB)
 #socket.bind("tcp://*:5555")
+
+# Configuration du serveur
+host = 'localhost'
+port = 5000
+
+# Création du socket
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server_socket.bind((host, port))
+server_socket.listen(1)
+
+# Attente de la connexion
+client_socket, address = server_socket.accept()
+print("Instance 1: Connexion établie avec", address)
+
 
 class Block:
     def __init__(self, transactions, previous_hash):
@@ -101,50 +116,58 @@ while True:
     print("4. Afficher la blockchain")
     print("5. Quitter")
     #message = socket.recv_string()
-    blockchain.pending_transactions = json.loads(message)
-    
-    
 
-    choice = input("Choisissez une option (1-4): ")
+    client_socket.settimeout(5)
+    try:
+        message = client_socket.recv(1024).decode()
+        if message:
+            blockchain.pending_transactions = json.loads(message)
+        else:
+            choice = input("Choisissez une option (1-4): ")
 
-    if choice == '1':
-        sender = generate_random_address(10)
-        recipient = generate_random_address(10)
-        amount = float(input("Montant de la transaction: "))
-        transaction = {"sender": sender, "recipient": recipient, "amount": amount}
-        blockchain.add_transaction(transaction)
-        print("La transaction a été ajoutée avec succès.")
-        message = json.dumps(blockchain.get_pending_transactions())
-        #socket.send_string(message)
+            if choice == '1':
+                sender = generate_random_address(10)
+                recipient = generate_random_address(10)
+                amount = float(input("Montant de la transaction: "))
+                transaction = {"sender": sender, "recipient": recipient, "amount": amount}
+                blockchain.add_transaction(transaction)
+                print("La transaction a été ajoutée avec succès.")
+                message = json.dumps(blockchain.get_pending_transactions())
+                #socket.send_string(message)
+                client_socket.send(message.encode())
 
-    elif choice == '2':
-        blockchain.mine_pending_transactions()
-        blockchain.save_blockchain()
-        print("Les transactions en attente ont été minées avec succès.")
-        message = json.dumps(blockchain.get_pending_transactions())
-        #socket.send_string(message)
 
-    elif choice == '3':
-        for transaction in blockchain.get_pending_transactions():
-            print("Sender:", transaction['sender'])
-            print("Recipient:", transaction['recipient'])
-            print("Amount:", transaction['amount'])
-            print("-------------------")
-        
+            elif choice == '2':
+                blockchain.mine_pending_transactions()
+                blockchain.save_blockchain()
+                print("Les transactions en attente ont été minées avec succès.")
+                message = json.dumps(blockchain.get_pending_transactions())
+                #socket.send_string(message)
+                client_socket.send(message.encode())
 
-    elif choice == '4':
-        print("\n==== Blockchain ====")
-        for block in blockchain.chain:
-            print("|Hash:", block.hash)
-            print("|Timestamp:", block.timestamp)
-            print("|Transactions:", block.transactions)
-            print("|Nonce:", block.nonce)
-            print("|Previous Hash:", block.previous_hash)
-            print("--------------------------------------")
+            elif choice == '3':
+                for transaction in blockchain.get_pending_transactions():
+                    print("Sender:", transaction['sender'])
+                    print("Recipient:", transaction['recipient'])
+                    print("Amount:", transaction['amount'])
+                    print("-------------------")
 
-    elif choice == '5':
-        blockchain.save_blockchain()
-        break
 
-    else:
-        print("Option invalide. Veuillez réessayer.")
+            elif choice == '4':
+                print("\n==== Blockchain ====")
+                for block in blockchain.chain:
+                    print("|Hash:", block.hash)
+                    print("|Timestamp:", block.timestamp)
+                    print("|Transactions:", block.transactions)
+                    print("|Nonce:", block.nonce)
+                    print("|Previous Hash:", block.previous_hash)
+                    print("--------------------------------------")
+
+            elif choice == '5':
+                blockchain.save_blockchain()
+                break
+            
+            else:
+                print("Option invalide: Veuillez réessayer.")
+    except socket.timeout:
+        print("Le client n'a pas envoyé de message.")
