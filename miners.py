@@ -108,18 +108,16 @@ while True:
     client_socket.settimeout(5)
     try:
         message = client_socket.recv(1024).decode()
-        if message:
-            blockchain.pending_transactions = json.loads(message)
-            print("Transactions en attentes :", blockchain.get_pending_transactions())
-        else:
-            print("Minage en cour...")	
-            #message = socket.recv_string() 
-            blockchain.mine_pending_transactions()
-            blockchain.save_blockchain()
-            message = json.dumps(blockchain.get_pending_transactions())
-            #socket.send_string(message)
-            client_socket.send(message.encode())
+        blockchain.pending_transactions = json.loads(message)
+        print("Transactions en attentes :", blockchain.get_pending_transactions())
     except socket.timeout:
+        print("Minage en cour...")	
+        #message = socket.recv_string() 
+        blockchain.mine_pending_transactions()
+        blockchain.save_blockchain()
+        message = json.dumps(blockchain.get_pending_transactions())
+        #socket.send_string(message)
+        client_socket.send(message.encode())
         print("Transaction en attente...")
 
     
